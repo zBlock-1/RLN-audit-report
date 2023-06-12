@@ -1,3 +1,8 @@
+> __Note__
+> - Use the template below for your report
+> - Please submit your report as an **issue** in this repo
+> - Changes you recommend to the codebase should be submitted as **PR** to this repo https://github.com/zBlock-1/circom-rln and/or (optionally if you're including contracts in your scope) https://github.com/zBlock-1/rln-contracts
+
 # yAcademy TODO_protocol_name Review <!-- omit in toc -->
 
 **Review Resources:**
