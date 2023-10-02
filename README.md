@@ -32,9 +32,25 @@ Auditors:
 - [Code Evaluation Matrix](#code-evaluation-matrix)
 - [Findings Explanation](#findings-explanation)
     - [Critical Findings](#critical-findings)
+        - [1. Risk of secret getting revealed if the input is zero](#1-critical---risk-of-secret-getting-revealed-if-the-input-is-zero)
     - [High Findings](#high-findings)
     - [Medium Findings](#medium-findings)
+        - [1. Unused public inputs optimized out by the circom compiler](#1-medium---unused-public-inputs-optimized-out-by-the-circom-compiler)
+        - [2. Effective stake at risk is only fees and not the complete stake as intended](#2-medium---effective-stake-at-risk-is-only-fees-and-not-the-complete-stake-as-intended)
     - [Low Findings](#low-findings)
+        - [1. Inconsistency between contract and circuit on the number of bits for userMessageLimit](#1-low---inconsistency-between-contract-and-circuit-on-the-number-of-bits-for-usermessagelimit)
+        - [2. Difference between documents and implementation](#2-low---difference-between-documents-and-implementation)
+        - [3. Unnecessary import & inheritance of Ownable](#3-low---unnecessary-import--inheritance-of-ownable)
+        - [4. Edge case in user registration](#4-low---edge-case-in-user-registration)
+        - [5. Parameter validation missing in rln.circom](#5-low---parameter-validation-missing-in-rlncircom)
+        - [6. Check if the `identityCommitment` is less than the SCALAR FIELD](#6-low---check-if-the-identitycommitment-is-less-than-the-scalar-field)
+        - [7. Specification uses incorrect definition of identity commitment](#7-low---specification-uses-incorrect-definition-of-identity-commitment)
+    - [Informational Findings](#informational-findings)
+        - [1. Mismatch between specification and implementation for x value](#1-informational---mismatch-between-specification-and-implementation-for-x-value)
+        - [2. Misleading Naming Convention for Utility Circuits](#2-informational---misleading-naming-convention-for-utility-circuits)
+        - [3. Edge case in Shamir Secret Sharing computation](#3-informational---edge-case-in-shamir-secret-sharing-computation)
+        - [4. Possibility of Spamming](#4-informational---possibility-of-spamming)
+        - [5. Penalty enforced on the user doesn't scale with the magnitude of their spam](#5-informational---penalty-enforced-on-the-user-doesnt-scale-with-the-magnitude-of-their-spam)
 - [Final Remarks](#final-remarks)
 - [Automated Program Analysis](/AutomatedAnalysis.md)
 
@@ -92,7 +108,7 @@ Findings are broken down into sections by their respective Impact:
 
 ## Critical Findings
 
-### 1. Critical - Risk of secret getting revealed if the input is zero.
+### 1. Critical - Risk of secret getting revealed if the input is zero
 
 When the message `x` is given the value 0, the identity secret is revealed. 
 #### Technical Details
@@ -100,9 +116,9 @@ When the message `x` is given the value 0, the identity secret is revealed.
 If the input x is 0 in ``y <== identitySecret + a1 * x;``, it will reveal the ``identitySecret``. `x` becomes 0 for value 0 and `21888242871839275222246405745257275088548364400416034343698204186575808495617`
 [Ref: Circom Docs](https://docs.circom.io/background/background/#signals-of-a-circuit)
 
-Also, Circom 2.0.6 introduces two new prime numbers to work with
-The order of the scalar field of $BLS12 - 381$ is ``52435875175126190479447740508185965837690552500527637822603658699938581184513``
-The goldilocks prime 18446744069414584321, originally used in $plonky-2$
+Also, Circom 2.0.6 introduces two new prime numbers to work with : 
+- The order of the scalar field of `BLS12 - 381` is ``52435875175126190479447740508185965837690552500527637822603658699938581184513``
+- The goldilocks prime `18446744069414584321`, originally used in `plonky-2`
 
 ```
 template RLN() {
@@ -191,7 +207,7 @@ Consider using different incentive mechanism for slash.
 #### Developer Response
 Acknowledged
 
-Reported by (https://github.com/abhishekvispute)
+Reported by [curiousapple](https://github.com/abhishekvispute)
 
 ## Low Findings
 
@@ -403,7 +419,7 @@ Reported by [MarkuSchick](https://github.com/MarkuSchick)
 
 ## Informational Findings
 
-### 1. Informational - Mismatch between specification and implementation
+### 1. Informational - Mismatch between specification and implementation for x value
 
 Mismatch between specification and implementation regarding the `x` message value.
 
