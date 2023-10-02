@@ -101,11 +101,8 @@ If the input x is 0 in ``y <== identitySecret + a1 * x;``, it will reveal the ``
 [Ref: Circom Docs](https://docs.circom.io/background/background/#signals-of-a-circuit)
 
 Also, Circom 2.0.6 introduces two new prime numbers to work with
-The order of the scalar field of the 
-.
-52435875175126190479447740508185965837690552500527637822603658699938581184513
-The goldilocks prime 18446744069414584321, originally used in 
-.
+The order of the scalar field of $BLS12 - 381$ is ``52435875175126190479447740508185965837690552500527637822603658699938581184513``
+The goldilocks prime 18446744069414584321, originally used in $plonky-2$
 
 ```
 template RLN() {
@@ -156,7 +153,7 @@ Medium. Despite circom not generating constraints for unused inputs, snarkjs, wh
 
 As outlined in [0xPARC's zk-bug-tracker](https://github.com/0xPARC/zk-bug-tracker#5-unused-public-inputs-optimized-out), it is advised to add a dummy constraint using the unused signal address in the circuit. This change ensures that the zk-SNARK proof is dependent on the `address` input.
 
-```
+```diff
 diff --git a/circuits/withdraw.circom b/circuits/withdraw.circom
 index a2051ea..7a4b88d 100644
 --- a/circuits/withdraw.circom
@@ -231,7 +228,7 @@ Low. On the current implementation, this discrepancy does not pose any issues to
 
 Short term, add a range check to the circuits to make sure they are constrained to the same range as the smart contract variables. Long term, make sure the input space of the contracts and the circuits are always in sync.
 
-```
+```diff
 function register(uint256 identityCommitment, uint256 amount) external {
         ...
         uint256 messageLimit = amount / MINIMAL_DEPOSIT;
@@ -354,6 +351,8 @@ require(identityCommitment < snark_scalar_field);
 #### Developer Response
 > `identityCommitment` cannot be 256 bit, as it's the result of Poseidon hash-function that's defined over p (prime field of Circom/bn254)
 
+Reported by [nullity](https://github.com/nullity00)
+
 ### 7. Low - Specification uses incorrect definition of identity commitment
 
 The [V2 Specification](https://rfc.vac.dev/spec/58/#rln-diff-flow) uses the `identity_secret` to compute the `identity_commitment` instead of the `identity_secret_hash`. The `identity_secret` is already used by the Semaphore circuits and should not get revealed in a Slashing event.
@@ -365,7 +364,7 @@ RLN [stays compatible](https://rfc.vac.dev/spec/32/#appendix-b-identity-scheme-c
 RLN V2 improves upon the V1 Protocol by allowing to set different rate-limits for users.
 Hence, the definition of the user identity changes from the [V1 definition](https://rfc.vac.dev/spec/32/#user-identity):
 
-```
+```diff
     identity_secret: [identity_nullifier, identity_trapdoor],
     identity_secret_hash: poseidonHash(identity_secret),
     identity_commitment: poseidonHash([identity_secret_hash])
@@ -379,7 +378,7 @@ Low.
 
 In Short term, Modify the following part of the [V2 Specification](https://rfc.vac.dev/spec/58/#registration-1) :
 
-```
+```diff
 Registration
 
 -id_commitment in 32/RLN-V1 is equal to poseidonHash=(identity_secret). 
@@ -404,7 +403,7 @@ Reported by [MarkuSchick](https://github.com/MarkuSchick)
 
 ## Informational Findings
 
-### 1. Informational - owtch between specification and implementation
+### 1. Informational - Mismatch between specification and implementation
 
 Mismatch between specification and implementation regarding the `x` message value.
 
