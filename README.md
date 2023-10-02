@@ -142,7 +142,6 @@ The user may get his secret revealed without even violating any rules.
 4. Constrain `a1*x` to be non-zero by adding ``isZero(a1*x).out === 0``
 
 #### Developer Response
-
 > x is hash of the message, and it's hashed outside of the circuits. Probability of finding preimage of 0 for Poseidon hash is negligible, it's not critical bug; though it may be user error to use 0 value for x, but as it's public input - then it can be checked on the client side - no deal to make it in the circuit.
 
 Reported by [Rajesh Kanna](https://github.com/RajeshRk18), [0xKitetsu](https://twitter.com/0xKitetsu), [Chen Wen Kang](https://github.com/cwkang1998), [Vincent Owen](https://github.com/makluganteng), [Antonio Viggiano](https://github.com/aviggiano), [Igor Line](https://github.com/igorline), [Oba](https://github.com/obatirou), [0xnagu](https://github.com/thogiti)
@@ -205,7 +204,7 @@ Users lose only part of the stake for their misbehavior
 #### Recommendation
 Consider using different incentive mechanism for slash.
 #### Developer Response
-Acknowledged
+> Acknowledged
 
 Reported by [curiousapple](https://github.com/abhishekvispute)
 
@@ -261,7 +260,7 @@ Reported by [nullity](https://github.com/nullity00), [Antonio Viggiano](https://
 
 ### 2. Low - Difference between documents and implementation
 
-The documantation mentions that the rate limit is between `1` and `userMessageLimit`
+The documentation mentions that the rate limit is between `1` and `userMessageLimit`
 
 > Signaling will use other circuit, where your limit is private input, and the counter k is checked that it's in the range from 1 to userMessageLimit.
 
@@ -314,7 +313,7 @@ In the user registration the calculation `y = mx + c` can have unexpected side e
 
 #### Technical Details
 
-In the [user registration spec](https://rate-limiting-nullifier.github.io/rln-docs/protocol_spec.html#user-registration), for `y = mx + c` where `m` and `x` can be multiplicative inverse of each other(less probability),then the eq becomes `y = 1 + c` the attacker can easily subtract from the public `y` to get hash of the secret key.
+In the [user registration spec](https://rate-limiting-nullifier.github.io/rln-docs/protocol_spec.html#user-registration), for `y = mx + c` where `m` and `x` can be multiplicative inverse of each other(less probability), then the equation becomes `y = 1 + c`. The attacker can easily subtract from the public `y` to get the hash of the secret key.
 #### Impact
 Low.
 
@@ -455,7 +454,7 @@ Informational.
 Rename the circuit to `identity_commitment.circom` to better reflect its purpose.
 
 #### Developer Response
-None
+> None
 
 Reported by [Chen Wen Kang](https://github.com/cwkang1998), [Vincent Owen](https://github.com/makluganteng)
 
