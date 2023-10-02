@@ -113,8 +113,7 @@ Findings are broken down into sections by their respective Impact:
 When the message `x` is given the value 0, the identity secret is revealed. 
 #### Technical Details
 
-If the input x is 0 in ``y <== identitySecret + a1 * x;``, it will reveal the ``identitySecret``. `x` becomes 0 for value 0 and `21888242871839275222246405745257275088548364400416034343698204186575808495617`
-[Ref: Circom Docs](https://docs.circom.io/background/background/#signals-of-a-circuit)
+If the input x is 0 in ``y <== identitySecret + a1 * x;``, it will reveal the ``identitySecret``. `x` becomes 0 for value 0 and `21888242871839275222246405745257275088548364400416034343698204186575808495617` as mentioned in [Circom Docs](https://docs.circom.io/background/background/#signals-of-a-circuit)
 
 Also, Circom 2.0.6 introduces two new prime numbers to work with : 
 - The order of the scalar field of `BLS12 - 381` is ``52435875175126190479447740508185965837690552500527637822603658699938581184513``
@@ -162,7 +161,7 @@ The circuit ``withdraw.circom`` contains a potential issue related to public inp
 The `withdraw.circom` circuit specifies `address` as a public input but does not use this input in any constraints. Consequently, the unused input could be pruned by the compiler, making the zk-SNARK proof independent of this input. This may result in a potentially exploitative behavior.
 #### Impact
 
-Medium. Despite circom not generating constraints for unused inputs, snarkjs, which is used by RLN, does generate these constraints. The protocol also tested ark-circom, which also adds the constraint ommitted by circom. However, if some zk-SNARK implementation does not include these constraints, this can lead to a potential loss of funds by users of the protocol.
+Medium. Despite circom not generating constraints for unused inputs, snarkjs, which is used by RLN, does generate these constraints. The protocol also tested `ark-circom`, which also adds the constraint ommitted by circom. However, if some zk-SNARK implementation does not include these constraints, this can lead to a potential loss of funds by users of the protocol.
 
 #### Recommendation
 

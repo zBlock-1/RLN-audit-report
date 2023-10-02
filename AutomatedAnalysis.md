@@ -80,4 +80,4 @@ circomspect: 1 issue found.
 
 [Ecne: An engine for verifying the soundness of R1CS constraints](https://github.com/franklynwang/EcneProject)
 
-The Circom circuits were compiled to non-optimized R1CS constraints system and then they were tested for Weak Verification to check for any bad constraints or underconstraints. All the circuits passed the Ecne tests without any bad or underconstraints. This verifies that R1CS equations of the given circuits uniquely determine outputs given inputs (i.e. that the constraints are sound).
+The Circom circuits were compiled to non-optimized R1CS constraints system and then they were tested for `Weak Verification` to check for any bad constraints or underconstraints. All the circuits passed the Ecne tests without any bad or underconstraints. This verifies that R1CS equations of the given circuits uniquely determine outputs given inputs (i.e. that the constraints are sound).
