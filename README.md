@@ -1,4 +1,4 @@
-# yAcademy Rate Limiting Nullifier (RLN)
+# yAcademy Rate Limiting Nullifier (RLN) Review
 
 Review Resources:
 
