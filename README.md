@@ -100,6 +100,13 @@ When the message `x` is given the value 0, the identity secret is revealed.
 If the input x is 0 in ``y <== identitySecret + a1 * x;``, it will reveal the ``identitySecret``. `x` becomes 0 for value 0 and `21888242871839275222246405745257275088548364400416034343698204186575808495617`
 [Ref: Circom Docs](https://docs.circom.io/background/background/#signals-of-a-circuit)
 
+Also, Circom 2.0.6 introduces two new prime numbers to work with
+The order of the scalar field of the 
+.
+52435875175126190479447740508185965837690552500527637822603658699938581184513
+The goldilocks prime 18446744069414584321, originally used in 
+.
+
 ```
 template RLN() {
     ...
@@ -123,28 +130,14 @@ The user may get his secret revealed without even violating any rules.
 
 #### Developer Response
 
-> Probability of finding preimage of 0 for Poseidon hash is negligible, it's not critical bug; though it may be user error to use 0 value for x, but as it's public input - then it can be checked on the client side - no deal to make it in the circuit.
+> x is hash of the message, and it's hashed outside of the circuits. Probability of finding preimage of 0 for Poseidon hash is negligible, it's not critical bug; though it may be user error to use 0 value for x, but as it's public input - then it can be checked on the client side - no deal to make it in the circuit.
 
-Reported by [Rajesh Kanna](https://github.com/RajeshRk18), [0xKitetsu](https://twitter.com/0xKitetsu), [Chen Wen Kang](https://github.com/cwkang1998), [Vincent Owen](https://github.com/makluganteng)
+Reported by [Rajesh Kanna](https://github.com/RajeshRk18), [0xKitetsu](https://twitter.com/0xKitetsu), [Chen Wen Kang](https://github.com/cwkang1998), [Vincent Owen](https://github.com/makluganteng), [Antonio Viggiano](https://github.com/aviggiano), [Igor Line](https://github.com/igorline), [Oba](https://github.com/obatirou), [0xnagu](https://github.com/thogiti)
 
 
 ## High Findings
 
-### 1. High - 
-
-
-#### Technical Details
-
-#### Impact
-High. 
-
-#### Recommendation
-Add the constraints to the circuit and/or documentation
-
-#### Developer Response
-Acknowledged
-
-Reported by [Antonio Viggiano](https://github.com/aviggiano), [Igor Line](https://github.com/igorline), [Oba](https://github.com/obatirou)
+None
 
 ## Medium Findings
 
@@ -181,7 +174,27 @@ index a2051ea..7a4b88d 100644
 #### Developer Response
 > Good find! We'll add the "dummy constraint" to the circuit.
 
-Reported by [Antonio Viggiano](https://github.com/aviggiano), [Igor Line](https://github.com/igorline), [Oba](https://github.com/obatirou), [Chen Wen Kang](https://github.com/cwkang1998), [Vincent Owen](https://github.com/makluganteng), [0xKitetsu](https://twitter.com/0xKitetsu)
+Reported by [Antonio Viggiano](https://github.com/aviggiano), [Igor Line](https://github.com/igorline), [Oba](https://github.com/obatirou), [Chen Wen Kang](https://github.com/cwkang1998), [Vincent Owen](https://github.com/makluganteng), [0xKitetsu](https://twitter.com/0xKitetsu), [MarkuSchick](https://github.com/MarkuSchick), [Elpacos](https://github.com/Elpacos), [gafram](https://github.com/gafram), [Rajesh Kanna](https://github.com/RajeshRk18), [curiousapple](https://github.com/abhishekvispute), [0xnagu](https://github.com/thogiti), [lwltea](https://github.com/lwltea), [parsley](https://github.com/bbresearcher), [Vishal Kulkarni](https://github.com/Vishalkulkarni45), [whoismatthewmc](https://github.com/whoismatthewmc1), [zkoranges](https://github.com/zkoranges)
+
+### 2. Medium - Effective stake at risk is only fees and not the complete stake as intended
+
+
+RLN contracts enforce users to stake and register themselves before being part of the network.
+The idea here is if a user misbehaves and spams the network, anyone can slash them in return for their stake.
+However, since networks are anonymous, users can slash themselves using another identity and only lose fees.
+
+#### Technical Details
+
+`N/A`
+#### Impact
+Users lose only part of the stake for their misbehavior
+
+#### Recommendation
+Consider using different incentive mechanism for slash.
+#### Developer Response
+Acknowledged
+
+Reported by (https://github.com/abhishekvispute)
 
 ## Low Findings
 
@@ -231,7 +244,7 @@ function register(uint256 identityCommitment, uint256 amount) external {
 #### Developer Response
 > Good find! We'll add this check to the contract :)
 
-Reported by [nullity](https://github.com/nullity00)
+Reported by [nullity](https://github.com/nullity00), [Antonio Viggiano](https://github.com/aviggiano), [Igor Line](https://github.com/igorline), [Oba](https://github.com/obatirou), [curiousapple](https://github.com/abhishekvispute), [0xnagu](https://github.com/thogiti), [Vishal Kulkarni](https://github.com/Vishalkulkarni45)
 
 ### 2. Low - Difference between documents and implementation
 
@@ -261,6 +274,8 @@ Signaling will use other circuit, where your limit is private input, and the cou
 #### Developer Response
 > Docs are out of date, we'll update them soon.
 
+Reported by [lwltea](https://github.com/lwltea), [parsley](https://github.com/bbresearcher), [Vishal Kulkarni](https://github.com/Vishalkulkarni45), [whoismatthewmc](https://github.com/whoismatthewmc1), [zkoranges](https://github.com/zkoranges)
+
 ### 3. Low - Unnecessary import & inheritance of Ownable
 
 Contract RLN inherits from Ownable but ownable functionality isn't actually used by the contract.
@@ -278,6 +293,8 @@ Remove `Ownable` import and inheritance from `RLN.sol`
 #### Developer Response
 > Thanks, we should remove Ownable from the contract.
 
+Reported by [curiousapple](https://github.com/abhishekvispute), [lwltea](https://github.com/lwltea)
+
 ### 4. Low - Edge case in user registration
 
 In the user registration the calculation `y = mx + c` can have unexpected side effects.
@@ -294,6 +311,7 @@ In the `rln.circom` add a check to make sure `m` and `x` are not multiplicative 
 #### Developer Response
 > The probability of that is negligible, and prover can make this check before proving.
 
+Reported by [Vishal Kulkarni](https://github.com/Vishalkulkarni45)
 ### 5. Low - Parameter validation missing in rln.circom
 
 The code doesn't check if `DEPTH` and `LIMIT_BIT_SIZE` are within expected ranges or conform to specific requirements. If these are passed in as invalid values, it could lead to unexpected behavior or vulnerabilities.
@@ -313,6 +331,8 @@ Add checks to ensure that the values of `DEPTH` and `LIMIT_BIT_SIZE` are within 
 
 #### Developer Response
 > `DEPTH` and `LIMIT_BIT_SIZE` are not the inputs of the circuit, but compile-time metaparameters. We don't need to range check them. It's just constant values that describe behavior of the circuit as well as code itself.
+
+Reported by [0xnagu](https://github.com/thogiti), [zkoranges](https://github.com/zkoranges)
 
 ### 6. Low - Check if the `identityCommitment` is less than the SCALAR FIELD
 
@@ -334,9 +354,57 @@ require(identityCommitment < snark_scalar_field);
 #### Developer Response
 > `identityCommitment` cannot be 256 bit, as it's the result of Poseidon hash-function that's defined over p (prime field of Circom/bn254)
 
+### 7. Low - Specification uses incorrect definition of identity commitment
+
+The [V2 Specification](https://rfc.vac.dev/spec/58/#rln-diff-flow) uses the `identity_secret` to compute the `identity_commitment` instead of the `identity_secret_hash`. The `identity_secret` is already used by the Semaphore circuits and should not get revealed in a Slashing event.
+
+#### Technical Details
+
+RLN [stays compatible](https://rfc.vac.dev/spec/32/#appendix-b-identity-scheme-choice) with Semaphore circuits by deriving the secret ("`identity_secret_hash`") as the hash of the semaphore secrets `identity_nullifier` and `identity_trapdoor`.
+
+RLN V2 improves upon the V1 Protocol by allowing to set different rate-limits for users.
+Hence, the definition of the user identity changes from the [V1 definition](https://rfc.vac.dev/spec/32/#user-identity):
+
+```
+    identity_secret: [identity_nullifier, identity_trapdoor],
+    identity_secret_hash: poseidonHash(identity_secret),
+    identity_commitment: poseidonHash([identity_secret_hash])
++   rate_commitment: poseidonHash([identity_commitment, userMessageLimit])
+```
+The [RLN-Diff](https://rfc.vac.dev/spec/58/#rln-diff-flow) flow wrongfully derives the `identity_commitment` from the `identity_secret` directly instead of the `identity_secret_hash`.
+#### Impact
+Low.
+
+#### Recommendation
+
+In Short term, Modify the following part of the [V2 Specification](https://rfc.vac.dev/spec/58/#registration-1) :
+
+```
+Registration
+
+-id_commitment in 32/RLN-V1 is equal to poseidonHash=(identity_secret). 
++id_commitment in 32/RLN-V1 is equal to poseidonHash=(identity_secret_hash). 
+The goal of RLN-Diff is to set different rate-limits for different users. It follows that id_commitment must somehow depend on the user_message_limit parameter, where 0 <= user_message_limit <= message_limit. There are few ways to do that:
+1. Sending identity_secret_hash = poseidonHash(identity_secret, userMessageLimit) 
+and zk proof that user_message_limit is valid (is in the right range). This approach requires zkSNARK verification, which is an expensive operation on the blockchain.
+-2. Sending the same identity_secret_hash as in 32/RLN-V1 (poseidonHash(identity_secret)) 
++2. Sending the same identity_commitment as in 32/RLN-V1 (poseidonHash(identity_secret_hash)) 
+and a user_message_limit publicly to a server or smart-contract where 
+-rate_commitment = poseidonHash(identity_secret_hash, userMessageLimit) is calculated. 
++rate_commitment = poseidonHash(identity_commitment, userMessageLimit) is calculated. 
+The leaves in the membership Merkle tree would be the rate_commitments of the users. This approach requires additional hashing in the Circuit, but it eliminates the need for zk proof verification for the registration.
+```
+
+In the long term, rename the variable `identity_secret` in the circuit to avoid further confusion with a variable of the same name [derived from Semaphore](https://rfc.vac.dev/spec/32/#appendix-b-identity-scheme-choice).
+
+#### Developer Response
+> Spec/docs is out of date, we'll update it soon. Thanks for your review.
+
+Reported by [MarkuSchick](https://github.com/MarkuSchick)
+
 ## Informational Findings
 
-### 1. Informational - Mismatch between specification and implementation
+### 1. Informational - owtch between specification and implementation
 
 Mismatch between specification and implementation regarding the `x` message value.
 
@@ -350,6 +418,11 @@ Informational.
 #### Recommendation
 
 Update the implementation to hash the `x` value according to the specification.
+
+#### Developer Response
+> x is hash of the message, and it's hashed outside of the circuits. Correctness can be checked on the client-side as it's public input.
+
+Reported by [Antonio Viggiano](https://github.com/aviggiano), [Igor Line](https://github.com/igorline), [Oba](https://github.com/obatirou)
 
 ### 2. Informational - Misleading Naming Convention for Utility Circuits
 
@@ -371,6 +444,65 @@ None
 
 Reported by [Chen Wen Kang](https://github.com/cwkang1998), [Vincent Owen](https://github.com/makluganteng)
 
+### 3. Informational - Edge case in Shamir Secret Sharing computation
+
+In Shamir Secret Sharing computation, the coefficient of the random value X may be a multiplicative inverse so the secret maybe revealed in that case. Although, the probability of having multiplicative inverse is $1/p$ where $p$ is prime order.
+
+#### Technical Details
+
+`N/A`
+
+#### Impact
+The user may get his secret revealed but the probability is negligible.
+
+#### Recommendation
+
+This finding is just to address this issue. If the secret sharing is computed using higher degree polynomials, we may not have this issue.
+
+#### Developer Response
+> As you said - probability of that is negligible
+
+Reported by [Rajesh Kanna](https://github.com/RajeshRk18)
+
+### 4. Informational - Possibility of Spamming
+
+By sending the same message continuously, users can still spam the network. It is true that if the users change their msg and go above the msg limit, they expose their secret, however, they can still send the same messages continuously.
+
+#### Technical Details
+
+`N/A`
+
+#### Impact
+The protocol team cleared that this is not an issue, since nodes will filter the same msg out.
+
+#### Recommendation
+
+`N/A`
+
+#### Developer Response
+> You cannot spam more than once. As soon as user exceed the limit, they can be slashed immediately (at least on the node level)
+
+Reported by [curiousapple](https://github.com/abhishekvispute)
+
+### 5. Informational - Penalty enforced on the user doesn't scale with the magnitude of their spam
+
+There is no difference between a penalty for spamming once or spamming x1000 times.
+Hence the cost of attack does not scale with the impact
+All attacker needs to do is do a minimum deposit and then he/she can spam the network with any number of messages at once, and all they are penalized for is a minimum deposit.
+
+#### Technical Details
+`N/A`
+#### Impact
+This incentive structure puts an innocent and malicious rule breaker in the same bucket.
+
+#### Recommendation
+`N/A`
+
+#### Developer Response
+> You cannot spam more than once. As soon as user exceed the limit, they can be slashed immediately (at least on the node level)
+
+Reported by [curiousapple](https://github.com/abhishekvispute)
+
 
 ## Final remarks
 
@@ -378,8 +510,7 @@ Reported by [Chen Wen Kang](https://github.com/cwkang1998), [Vincent Owen](https
     - Poseidon hash fucntion is collision-resistant, resistant to differential, algebraic, and interpolation attacks.
     - The trusted setup will be done correctly and all relevant artifacts kept safe.
 - The Merkle tree used for membership proof is assumed to be secure against second-preimage attacks.
-- Social engineering attacks are still a valid way to break the system.
-ECDSA has several nonce based attacks. It is very important that the client side confirguration doesn't leak any nonce data or any app metadata that can reduce the security of guessing nonce for the ECDSA.
-- Clarify the proper usage of each template, where assertions about the valuation of its inputs (pre-conditions) should be satisfied when calling the template.
-- Write a detailed check list of things to do on the client side. This can help the developers not make standard mistakes of not validating the inputs and outputs and there by resulting into underconstrained related critical bugs.
+- Social engineering attacks are still a valid way to break the system. An attacker can obtain the `identitySecret` signal of a user by using methods such as social engineering, phishing attacks, or exploiting vulnerabilities in the user's system.
+- The security of the circuit also depends on the secrecy of the `identitySecret` signal, which is assumed to be kept secret by the user.
+- The security of the circuit depends on the security of the cryptographic primitives used for range checks and SSS share calculations.
 - Overall, the code demonstrates good implementation of mathematical operations and basic functionality. However, it could benefit from more extensive documentation and additional testing and verification procedures.
