@@ -2,7 +2,8 @@
 
 Review Resources:
 
-- [circom-rln](https://github.com/Rate-Limiting-Nullifier/circom-rln)
+- [codebase](https://github.com/Rate-Limiting-Nullifier/circom-rln)
+- [spces v2](https://rfc.vac.dev/spec/58/#rln-diff-flow)
 
 Auditors:
 
@@ -58,25 +59,25 @@ Auditors:
 
 **Rate Limiting Nullifier**
 
-RLN (Rate-Limiting Nullifier) is a zk-gadget/protocol that enables spam prevention mechanism for anonymous environments.
+RLN (Rate-Limiting Nullifier) is a zk-library/protocol that enables spam prevention mechanism in permissionless environments while maintaining user anonymity. 
 
-Users register an identityCommitment, which is stored in a Merkle tree, along with a stake. When interacting with the protocol, the user generate a zero knowledge proof that ensures their identity commitment is part of the membership Merkle tree and they have not exceeded their rate limit. It leverages Shamir secret sharing for that. If they exceed their rate limit, their secret is revealed and their stake can be slashed.
+Users register an `identityCommitment` which is stored in a Merkle tree, along with a stake. When interacting with the protocol, the user generates a zero-knowledge proof that (a) their identity commitment is part of the membership Merkle tree and (b) they have not exceeded a preset rate limit of messages. Each message is effectively an `x` point, and sending it reveals the correponding `y` that is the evaluation of a Shamir-secret-sharded polynomial. They key ingredient that RLN provides is that `m+1` points are needed to reconstructed the polynomial, where `m` is the rate limit. Hence, anyone can reconstruct a user's secret and withdraw (slash) their stake if they exceed the limit by just 1 message. 
 
-The circuits of [RLN](https://github.com/Rate-Limiting-Nullifier/circom-rln/tree/37073131b9c5910228ad6bdf0fc50080e507166a) were reviewed over 15 days. The code review was performed between 31st May and 14th June, 2023. The repository was not under active development during the review, but the review was limited to the latest commit at the start of the review. This was commit [37073131b9](https://github.com/Rate-Limiting-Nullifier/circom-rln/tree/37073131b9c5910228ad6bdf0fc50080e507166a) for the circom-rln repo.
+The circuits of [RLN](https://github.com/Rate-Limiting-Nullifier/circom-rln/tree/37073131b9c5910228ad6bdf0fc50080e507166a) were reviewed between 31st May and 14th June, 2023. The repository was not under active development during the review and the review was limited to commit [37073131b9](https://github.com/Rate-Limiting-Nullifier/circom-rln/tree/37073131b9c5910228ad6bdf0fc50080e507166a).
 
-In addition, the contracts of the rln-contracts repo, commit [dfcdb2beff](https://github.com/Rate-Limiting-Nullifier/rln-contracts/tree/dfcdb2beff91583d02636570242cfdd8469b61c1), were provided as a reference implementation on how the circuits would be integrated. Although these contracts were considered out of scope, we have also included some related findings in this report.
+In addition, the contracts of the rln-contracts repo, commit [dfcdb2beff](https://github.com/Rate-Limiting-Nullifier/rln-contracts/tree/dfcdb2beff91583d02636570242cfdd8469b61c1), were provided as a reference implementation on how the circuits would be integrated (by a dApp for example). Although these contracts were out of scope, we have also included some related findings in this report.
 
 ## Scope
 
 The scope of the review consisted of the following circuits at the specific commit:
 
-- rln.circom
-- utils.circom
-- withdraw.circom
+- `rln.circom`
+- `utils.circom`
+- `withdraw.circom`
 
 After the findings were presented to the RLN team, fixes were made and included in several PRs.
 
-This review is a code review to identify potential vulnerabilities in the code. The reviewers did not investigate security practices or operational security and assumed that privileged accounts could be trusted. The reviewers did not evaluate the security of the code relative to a standard or specification. The review may not have identified all potential attack vectors or areas of vulnerability.
+This code review is for identifying potential vulnerabilities in the code. The reviewers did not investigate security practices or operational security and assumed that privileged accounts could be trusted. The reviewers did not evaluate the security of the code relative to a standard or specification. The review may not have identified all potential attack vectors or areas of vulnerability.
 
 yAcademy and the auditors make no warranties regarding the security of the code and do not warrant that the code is free from defects. yAcademy and the auditors do not represent nor imply to third parties that the code has been audited nor that the code is free from defects. By deploying or using the code, RLN and users of the contracts agree to use the code at their own risk.
 
@@ -85,15 +86,15 @@ yAcademy and the auditors make no warranties regarding the security of the code 
 
 | Category                 | Mark    | Description |
 | ------------------------ | ------- | ----------- |
-| Access Control           | N/A | RLN is a permissionless protocol, and as such no access control is required |
-| Mathematics              | Good | Well known libraries such as circomlib were used whenever possible. In particular to calculate the Poseidon hash function of necessary parameters |
+| Access Control           | N/A | Any access control is left to the systems of dApps that integrate RLN |
+| Mathematics              | Good | No heavy mathematical components were involved. The mathematics of the underlying proof system, Groth16, were not reviewed. RLN uses the latest version of its implementation (the circom compiler). |
 | Complexity               | Good | The code is easy to understand and closely follows the specification |
 | Libraries                | Good | Well known libraries such as circomlib were used whenever possible |
-| Decentralization         | Good | RLN is a permissionless protocol |
-| Cryptography           | Good    | The docs recommend generating proofs using Groth16 using a BN254 curve, which has a security level of `128 bits`. It makes use of the Poseidon hash function known for its efficiency, simplicity, and resistance against various cryptanalytic attacks. However, it's essential to note that cryptographic algorithms and functions are always subject to ongoing analysis, and new attacks or weaknesses may be discovered in the future. |
+| Decentralization         | Good | RLN can be integrated in highly decentralizead and permissionless environments |
+| Cryptography           | Good    | The docs recommend generating proofs with Groth16 using a BN254 curve, which has a security level of `128 bits`. It makes use of the Poseidon hash function known for its efficiency, zk-friendliness, and resistance against various cryptanalytic attacks. However, it's essential to note that cryptographic algorithms and functions are always subject to ongoing analysis, and new attacks or weaknesses may be discovered in the future. |
 | Code stability           | Good   | The code was reviewed at a specific commit. The code did not changed during the review. Moreover, it is not likely to change significantly with the addition of features or updates |
-| Documentation            | Good | RLN documentation comprises a specification [RFC](https://rfc.vac.dev/spec/32/#32rln-v1), a Github documentation [website](https://rate-limiting-nullifier.github.io/rln-docs/), a Github [README](https://github.com/Rate-Limiting-Nullifier/circom-rln/blob/37073131b9c5910228ad6bdf0fc50080e507166a/README.md), and a [Hackmd presentation](https://hackmd.io/@AtHeartEngineer/ryw64YQUh#/). It is recommended to reduce the number of resources necessaries to fully understand the protocol |
-| Monitoring               | N/A | The protocol is intended to be implemented by a dapp, which will be responsible for the monitoring |
+| Documentation            | Good | RLN documentation comprises a specification [RFC](https://rfc.vac.dev/spec/32/#32rln-v1), a Github documentation [website](https://rate-limiting-nullifier.github.io/rln-docs/), a Github [README](https://github.com/Rate-Limiting-Nullifier/circom-rln/blob/37073131b9c5910228ad6bdf0fc50080e507166a/README.md), and a [Hackmd presentation](https://hackmd.io/@AtHeartEngineer/ryw64YQUh#/). It is recommended to (a) add clear warnings to integrators of RLN regarding input assumptions (e.g. the need for hashing inputs, and the danger of malicious frontends that may intentionally not do that) and (b) reduce the number of resources necessaries to fully understand the protocol |
+| Monitoring               | N/A | The protocol is intended to be integrated by other systems or dApps which will be responsible for the monitoring |
 | Testing and verification | Average | The protocol contains only a few tests for the circuits. It is recommended to add more tests to increase the test coverage |
 
 ## Findings Explanation
@@ -131,12 +132,12 @@ template RLN() {
 
 #### Impact
 
-The user may get his secret revealed without even violating any rules.
+The user may get their secret revealed without them violating the rate-limit rules.
 
 #### Recommendation
 
-1. Try hashing the random number instead of directly using it.
-2. Have a `greater_than` constraint that checks whether the x is greater than zero (Quite inefficient compared to 1).
+1. Hash the random number instead of directly using it.
+2. Have a `greater_than` constraint that checks whether `x` is greater than zero (quite inefficient compared to 1).
 3. Impose `greater_than` constraint / hash the random number outside of circuit (relatively more efficient).
 4. Constrain `a1*x` to be non-zero by adding ``isZero(a1*x).out === 0``
 
@@ -161,7 +162,7 @@ The circuit ``withdraw.circom`` contains a potential issue related to public inp
 The `withdraw.circom` circuit specifies `address` as a public input but does not use this input in any constraints. Consequently, the unused input could be pruned by the compiler, making the zk-SNARK proof independent of this input. This may result in a potentially exploitative behavior.
 #### Impact
 
-Medium. Despite circom not generating constraints for unused inputs, snarkjs, which is used by RLN, does generate these constraints. The protocol also tested `ark-circom`, which also adds the constraint ommitted by circom. However, if some zk-SNARK implementation does not include these constraints, this can lead to a potential loss of funds by users of the protocol.
+Medium. Despite circom not generating constraints for unused inputs, snarkjs (which RLN uses) does generate these constraints. The protocol also tested `ark-circom`, which also adds the constraints ommitted by circom. However, if some zk-SNARK implementation does not include these constraints, it can lead to a potential loss of funds by users of the protocol.
 
 #### Recommendation
 
@@ -190,8 +191,8 @@ Reported by [Antonio Viggiano](https://github.com/aviggiano), [Igor Line](https:
 ### 2. Medium - Effective stake at risk is only fees and not the complete stake as intended
 
 
-RLN contracts enforce users to stake and register themselves before being part of the network.
-The idea here is if a user misbehaves and spams the network, anyone can slash them in return for their stake.
+RLN contracts require users to stake and register themselves before being part of the network.
+The idea here is if a user misbehaves and spams the network, anyone can slash their stake and get some of it.
 However, since networks are anonymous, users can slash themselves using another identity and only lose fees.
 
 #### Technical Details
@@ -261,7 +262,7 @@ Reported by [nullity](https://github.com/nullity00), [Antonio Viggiano](https://
 
 The documentation mentions that the rate limit is between `1` and `userMessageLimit`
 
-> Signaling will use other circuit, where your limit is private input, and the counter k is checked that it's in the range from 1 to userMessageLimit.
+> Signaling will use other circuit, where your limit is private input, and the counter `k` is checked that it's in the range from 1 to userMessageLimit.
 
 Although the implementation is sound, the counter `k` should be documented as being between `0` to `userMessageLimit-1`
 Testing the circuit allows for a `messageId` of `0` and does not allow for a `messageId` of `userMessageLimit`.
@@ -279,7 +280,7 @@ Low. There is no impact except for clarity to potential developers/users.
 #### Recommendation
 The project may consider chaging the wording to be something like :
 ```
-Signaling will use other circuit, where your limit is private input, and the counter k is checked that it's in the range from 0 to userMessageLimit -1.
+Signaling will use other circuit, where your limit is private input, and the counter `k` is checked that it is within the range from 0 to userMessageLimit -1.
 ```
 
 #### Developer Response
@@ -317,7 +318,7 @@ In the [user registration spec](https://rate-limiting-nullifier.github.io/rln-do
 Low.
 
 #### Recommendation
-In the `rln.circom` add a check to make sure `m` and `x` are not multiplicative inverse values of each other.
+In `rln.circom`, add a check to make sure `m` and `x` are not multiplicative inverses of each other.
 
 #### Developer Response
 > The probability of that is negligible, and prover can make this check before proving.
@@ -347,11 +348,11 @@ Reported by [0xnagu](https://github.com/thogiti), [zkoranges](https://github.com
 
 ### 6. Low - Check if the `identityCommitment` is less than the SCALAR FIELD
 
-As mentioned in [0xparc's bug tracker](https://github.com/0xPARC/zk-bug-tracker#semaphore-1), the inputs have to be less than the Snark's Scalar Field.
+As mentioned in [0xparc's bug tracker](https://github.com/0xPARC/zk-bug-tracker#semaphore-1), the inputs have to be less than the Snark's scalar field.
 
 #### Technical Details
 
-The prime field in circom is ~ `2**254` whereas solidity supports 256-bit integers. There is a possibility of users registering twice, once using the `identityCommitment` & another  time using `A` such that `A mod p = identityCommitment` where `p` is the prime field of circom. Here, the user registers twice using the same `identitySecret`.
+The prime field in circom is ~ `2**254` whereas solidity supports 256-bit integers. There is a possibility of users registering twice, once using the `identityCommitment` & another  time using `A` such that `A mod p = identityCommitment` where `p` is the prime field used in circom. Hence, the user registers twice using the same `identitySecret`.
 
 #### Impact
 Low.
@@ -375,8 +376,8 @@ The [V2 Specification](https://rfc.vac.dev/spec/58/#rln-diff-flow) uses the `ide
 
 RLN [stays compatible](https://rfc.vac.dev/spec/32/#appendix-b-identity-scheme-choice) with Semaphore circuits by deriving the secret ("`identity_secret_hash`") as the hash of the semaphore secrets `identity_nullifier` and `identity_trapdoor`.
 
-RLN V2 improves upon the V1 Protocol by allowing to set different rate-limits for users.
-Hence, the definition of the user identity changes from the [V1 definition](https://rfc.vac.dev/spec/32/#user-identity):
+RLN V2 improves upon the V1 Protocol by allowing the setting of different message rate-limit.
+Hence, the definition of the user identity changes from the [V1's definition](https://rfc.vac.dev/spec/32/#user-identity):
 
 ```diff
     identity_secret: [identity_nullifier, identity_trapdoor],
@@ -390,7 +391,7 @@ Low.
 
 #### Recommendation
 
-In Short term, Modify the following part of the [V2 Specification](https://rfc.vac.dev/spec/58/#registration-1) :
+In the short term, modify the following part of the [V2 Specification](https://rfc.vac.dev/spec/58/#registration-1) :
 
 ```diff
 Registration
@@ -459,7 +460,7 @@ Reported by [Chen Wen Kang](https://github.com/cwkang1998), [Vincent Owen](https
 
 ### 3. Informational - Edge case in Shamir Secret Sharing computation
 
-In Shamir Secret Sharing computation, the coefficient of the random value X may be a multiplicative inverse so the secret maybe revealed in that case. Although, the probability of having multiplicative inverse is $1/p$ where $p$ is prime order.
+In Shamir Secret Sharing computation, the coefficient of the random value `x` may be a multiplicative inverse and the secret maybe revealed. However, the probability of having multiplicative inverse is $1/p$ where $p$ is prime order, which is negligible.
 
 #### Technical Details
 
@@ -470,7 +471,7 @@ The user may get his secret revealed but the probability is negligible.
 
 #### Recommendation
 
-This finding is just to address this issue. If the secret sharing is computed using higher degree polynomials, we may not have this issue.
+This finding is just to highlight the potential of issue. If the secret sharing is computed using higher degree polynomials, this is not negligible. 
 
 #### Developer Response
 > As you said - probability of that is negligible
@@ -479,14 +480,14 @@ Reported by [Rajesh Kanna](https://github.com/RajeshRk18)
 
 ### 4. Informational - Possibility of Spamming
 
-By sending the same message continuously, users can still spam the network. It is true that if the users change their msg and go above the msg limit, they expose their secret, however, they can still send the same messages continuously.
+By sending **the same** message continuously, users can still spam the network. It is true that if the users change their msg and go above the msg limit, they expose their secret, however, they can still send the same messages continuously.
 
 #### Technical Details
 
 `N/A`
 
 #### Impact
-The protocol team cleared that this is not an issue, since nodes will filter the same msg out.
+Very low. Nodes will filter out repeated messages and drop the peer, as is the standard practice in any p2p messaging system. Such feature is baked into p2p libraries.
 
 #### Recommendation
 
@@ -506,7 +507,7 @@ All attacker needs to do is do a minimum deposit and then he/she can spam the ne
 #### Technical Details
 `N/A`
 #### Impact
-This incentive structure puts an innocent and malicious rule breaker in the same bucket.
+This incentive structure doesn't take into account the degree of spamming.
 
 #### Recommendation
 `N/A`
@@ -521,9 +522,9 @@ Reported by [curiousapple](https://github.com/abhishekvispute)
 
 - The RLN Protocol assumes that :
     - Poseidon hash fucntion is collision-resistant, resistant to differential, algebraic, and interpolation attacks.
-    - The trusted setup will be done correctly and all relevant artifacts kept safe.
+    - The trusted setup to instantiate the Groth16 parameters will be done correctly and all relevant artifacts kept safe.
 - The Merkle tree used for membership proof is assumed to be secure against second-preimage attacks.
 - Social engineering attacks are still a valid way to break the system. An attacker can obtain the `identitySecret` signal of a user by using methods such as social engineering, phishing attacks, or exploiting vulnerabilities in the user's system.
-- The security of the circuit also depends on the secrecy of the `identitySecret` signal, which is assumed to be kept secret by the user.
+- The security of the circuit depends on the secrecy of the `identitySecret` signal, which is assumed to be kept secret by the user.
 - The security of the circuit depends on the security of the cryptographic primitives used for range checks and SSS share calculations.
-- Overall, the code demonstrates good implementation of mathematical operations and basic functionality. However, it could benefit from more extensive documentation and additional testing and verification procedures.
+- Overall, the code demonstrates good implementation of mathematical operations and basic functionality. However, it could benefit from more extensive documentation and additional testing.

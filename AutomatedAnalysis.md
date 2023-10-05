@@ -1,18 +1,17 @@
 ## Automated program analysis tools
 
-Over the course of the audit, in addition to a manual review of the code, we applied different automated program analysis tools and evaluated their output.
+Over the course of the audit, in addition to a manual review of the code, we applied different automated analysis tools and evaluated their output.
 
 1. [circomspect](#1-circomspect)
 2. [Ecne](#2-ecne)
 
-A note on results from Ecne:
-
-- Ecne can output false positive. 
-- It relies on static analysis and there is no solver to concretely find the potential attack vector.
+**Note:**: Ecne can output false positive. It relies on static analysis but [does not](https://discord.com/channels/877252171983360072/1125118979065782456/1125286705377837206) call an SMT solver to concretely find the potential attack vector.
 
 ### Results
 
-The relevant findings from each tool were already included in the report. Below you can find their full output.
+The relevant findings from each tool were already included in the report. 
+
+Below is the full output of each tool.
 
 ### 1. Circomspect 
 
@@ -78,6 +77,5 @@ circomspect: 1 issue found.
 
 ### 2. Ecne
 
-[Ecne: An engine for verifying the soundness of R1CS constraints](https://github.com/franklynwang/EcneProject)
+The Circom circuits were compiled to non-optimized R1CS constraints system and then they were tested for `Weak Verification` to check for any bad constraints or underconstraints. All the circuits passed the [Ecne](https://github.com/franklynwang/EcneProject) tests without any mis- or under-constraints. This verifies that R1CS equations of the given circuits uniquely produce outputs given specific inputs.
 
-The Circom circuits were compiled to non-optimized R1CS constraints system and then they were tested for `Weak Verification` to check for any bad constraints or underconstraints. All the circuits passed the Ecne tests without any mis- or under-constraints. This verifies that R1CS equations of the given circuits uniquely produce outputs given certain inputs (i.e. that the constraints are sound).
